@@ -108,9 +108,16 @@ class Log(pygame.sprite.Sprite):
 
         self.size = 100
 
-        self.speed = random.uniform(0.07, 0.14)
-        self.dir = random.choice([1, -1])
-        self.rotationSpeed = self.speed * self.dir
+        self.rotationType = random.choice([0, 0, 1])
+        if self.rotationType == 0:
+            self.speed = random.uniform(0.07, 0.14)
+            self.dir = random.choice([1, -1])
+            self.rotationSpeed = self.speed * self.dir
+        
+        if self.rotationType == 1:
+            self.amplitude = random.uniform(0.03, 0.06)
+            self.frequency = random.uniform(0.0001, 0.0004)
+            self.rotationSpeed = math.sin(pygame.time.get_ticks() * self.frequency) * self.amplitude
 
         self.angle = 0
 
@@ -129,6 +136,13 @@ class Log(pygame.sprite.Sprite):
         self.logBottomOutline = orderedSpirte(self, self.gs, "LogOutlineBlack.png", 15, 0, self.size*2 + 5, self.size*2 + 5, 1)
         self.logShadow = orderedSpirte(self, self.gs, "LogShadow.png", 35, 0, self.size*2, self.size*2, 0)
 
+    def updateRotation(self, dTs):
+        if self.rotationType == 0:
+            self.angle += self.rotationSpeed * dTs
+        if self.rotationType == 1:
+            self.rotationSpeed = math.sin(pygame.time.get_ticks() * self.frequency) * self.amplitude * dTs
+            self.angle += self.rotationSpeed * dTs
+
     def updateSprites(self):
         self.logTop.update()
         self.logBottom.update()
@@ -141,10 +155,13 @@ class Knife(pygame.sprite.Sprite):
         self.gs = gs
         self.gs.knives.append(self)
 
-        self.x = x
+        self.randomDir = random.choice([-1, 1])
+
+        self.x = x - 150 * self.randomDir
         self.y = y
+        self.targetX = x
         
-        self.vel = (0, 0)
+        self.vel = (0.9 * self.randomDir, 0)
 
         #bool to only throw knife once
         self.hasThrown = False
@@ -168,7 +185,23 @@ class Knife(pygame.sprite.Sprite):
         self.outlineSprite.update()
         self.shadowSprite.update()
 
+        #set alpha when not yet positioned
+        if self.hasThrown == False:
+            alpha = 255 - 255 * (abs((self.x - self.targetX) / 150))
+            self.knifeSprite.image.set_alpha(alpha)
+            self.outlineSprite.image.set_alpha(alpha)
+            self.shadowSprite.image.set_alpha(alpha)
+        else:
+            self.knifeSprite.image.set_alpha(255)
+            self.outlineSprite.image.set_alpha(255)
+            self.shadowSprite.image.set_alpha(255)
+
     def move(self, dTs):
+        diff = abs(self.x - self.targetX)
+        if diff < 10 and self.hasThrown == False:
+            self.x = self.targetX
+            self.vel = (0, 0)
+
         if self.hasHit == False:
             self.x = self.x + self.vel[0] * dTs
             self.y = self.y + self.vel[1] * dTs
@@ -182,7 +215,8 @@ class Knife(pygame.sprite.Sprite):
 
     def throw(self, force):
         if self.hasThrown == False:
-            self.vel = (self.vel[0] + force[0], self.vel[1] + force[1])
+            self.x = self.targetX
+            self.vel = (force[0], force[1])
             self.hasThrown = True
 
     def collide(self):
@@ -204,6 +238,7 @@ class Knife(pygame.sprite.Sprite):
                     distToKnife = math.sqrt(vecToKnife[0] * vecToKnife[0] + vecToKnife[1] * vecToKnife[1])
                     if distToKnife < 10:
                         self.dead = True
+                        spawnParticles(self.gs, self.x, self.y, self.knifeSprite.image)
 
 class Apple(pygame.sprite.Sprite):
     def __init__(self, gs):
@@ -251,6 +286,7 @@ class Apple(pygame.sprite.Sprite):
             distToKnife = math.sqrt(vecToKnife[0] * vecToKnife[0] + vecToKnife[1] * vecToKnife[1])
             if distToKnife < 25:
                 self.dead = True
+                spawnParticles(self.gs, self.x, self.y, self.topImage.image)
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -322,6 +358,54 @@ def blitOrderedSprites():
         if sprite.doBlit == True:
             screen.blit(sprite.image, sprite.rect)
 
+class Particle(pygame.sprite.Sprite):
+    def __init__(self, gs, x, y, parentImage):
+        self.gs = gs
+        self.gs.particles.append(self)
+        
+        self.x = x
+        self.y = y
+        
+        self.vel = (random.uniform(-0.4, 0.4), random.uniform(-0.4, 0.4))
+        self.angluralVel = random.uniform(-1, 1)
+        self.gravity = 0.015 + random.uniform(-0.005, 0.005)
+        self.lifeTime = 120 + random.randint(-60, 60)
+        self.startLifeTime = self.lifeTime
+
+        self.parentImage = parentImage
+
+        #get random subsurface from parent image
+        self.image = self.parentImage
+        self.rect = self.image.get_rect()
+
+        #particle subsurface as segment and not ful image
+        """self.pwidth = random.randint(0, int(self.image.width / 2 - 0.5))
+        self.pheight = random.randint(0, int(self.image.height / 2 - 0.5))
+
+        self.px = random.randint(0, self.image.width - self.pwidth)
+        self.py = random.randint(0, self.image.height - self.pheight)"""
+
+    def update(self):
+        #update lifetime
+        self.lifeTime -= 1
+        
+        #update velocity and position
+        self.vel = (self.vel[0], self.vel[1] + self.gravity)
+        self.x += self.vel[0]
+        self.y += self.vel[1]
+
+        #update rect
+        self.image = pygame.transform.rotate(self.image, self.angluralVel)
+        self.rect = self.image.get_rect()
+        self.rect.centerx = self.x
+        self.rect.centery = self.y
+
+        #blit image
+        self.image.set_alpha(255 * (self.lifeTime / self.startLifeTime))
+        screen.blit(self.image, self.rect)
+
+def spawnParticles(gs, x, y, image):
+    particle = Particle(gs, x, y, image)
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 class GameState():
@@ -334,6 +418,8 @@ class GameState():
         self.orderedSprites = []
         self.knives = []
         self.apples = []
+
+        self.particles = []
 
         #initialize objects
         self.log = Log(self, 200, 200)
@@ -359,6 +445,8 @@ class GameState():
         self.orderedSprites = []
         self.knives = []
         self.apples = []
+
+        self.particles = []
 
         #initialize objects
         self.log = Log(self, 200, 200)
@@ -413,7 +501,7 @@ def checkForWin():
         #Win
         gs.transition.outTransition()
 
-    #check if no more knives and all knives have ghit the log
+    #check if no more knives and all knives have hit the log
     else:
         if gs.knifeBar.knivesLeft <= 0:
 
@@ -461,7 +549,7 @@ while running:
                     newKnife = Knife(gs, 200, 600)
 
     #update log
-    gs.log.angle += gs.log.rotationSpeed * dTs
+    gs.log.updateRotation(dTs)
     gs.log.updateSprites()
 
     #update knives
@@ -489,6 +577,11 @@ while running:
 
     #draw ordered sprites
     blitOrderedSprites()
+
+    #blit particles
+    for particle in gs.particles:
+        particle.update()
+    gs.particles = [particle for particle in gs.particles if particle.lifeTime > 0]
 
     #update transition animation
     gs.transition.updateOverlay()
