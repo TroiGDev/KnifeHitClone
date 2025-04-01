@@ -228,6 +228,7 @@ class Knife(pygame.sprite.Sprite):
 
             if distToLog < self.gs.log.size + 10:
                 self.hasHit = True
+                self.gs.soundMngr.playFromSounds(self.gs.soundMngr.knifeHitSfx)
                 self.vel = (0, 0)
                 self.vecToLog = vecToLog
 
@@ -239,6 +240,7 @@ class Knife(pygame.sprite.Sprite):
                     if distToKnife < 10:
                         self.dead = True
                         spawnParticles(self.gs, self.x, self.y, self.knifeSprite.image)
+                        self.gs.soundMngr.playFromSounds(self.gs.soundMngr.knifeBreakSfx)
 
 class Apple(pygame.sprite.Sprite):
     def __init__(self, gs):
@@ -287,6 +289,8 @@ class Apple(pygame.sprite.Sprite):
             if distToKnife < 25:
                 self.dead = True
                 spawnParticles(self.gs, self.x, self.y, self.topImage.image)
+                self.gs.soundMngr.playFromSounds(self.gs.soundMngr.fruitSliceSfx)
+                self.gs.score += 1
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -410,6 +414,14 @@ def spawnParticles(gs, x, y, image):
 
 class GameState():
     def __init__(self):
+        #initialize everything for all scenes
+        self.soundMngr = SoundManager()
+
+        self.highScore = 0
+        self.score = 0
+
+        self.font = pygame.font.Font('./Sprites/SuperMario256.ttf', 40)
+
         #initialize all objects for one scene
 
         #initialize transition
@@ -463,6 +475,28 @@ class GameState():
         self.knifeThrowForce = (0, -0.7)
         newKnife = Knife(self, 200, 600)
 
+    def updateScore(self):
+        if self.score > self.highScore:
+            self.highScore = self.score
+
+        #blit score text
+        highScoreText_top = self.font.render(str(self.highScore), True, (255, 255, 0))
+        highScoreText_bottom = self.font.render(str(self.highScore), True, (155, 100, 0))
+        highScoreText_shadow = self.font.render(str(self.highScore), True, (0, 0, 0))
+
+        scoreText_top = self.font.render(str(self.score), True, (255, 255, 255))
+        scoreText_bottom = self.font.render(str(self.score), True, (155, 155, 155))
+        scoreText_shadow = self.font.render(str(self.score), True, (0, 0, 0))
+
+        screen.blit(highScoreText_shadow, (screenWidth - 15 - highScoreText_shadow.width, 30 + screenHeight/2 - highScoreText_shadow.width/2))
+        screen.blit(scoreText_shadow, (screenWidth - 15 - scoreText_shadow.width, 30 + screenHeight/2 - scoreText_shadow.width/2 + 45))
+
+        screen.blit(highScoreText_bottom, (screenWidth - 15 - highScoreText_bottom.width, 18 + screenHeight/2 - highScoreText_bottom.width/2))
+        screen.blit(scoreText_bottom, (screenWidth - 15 - scoreText_bottom.width, 18 + screenHeight/2 - scoreText_bottom.width/2  + 45))
+
+        screen.blit(highScoreText_top, (screenWidth - 15 - highScoreText_top.width, 15 + screenHeight/2 - highScoreText_top.width/2))
+        screen.blit(scoreText_top, (screenWidth - 15 - scoreText_top.width, 15 + screenHeight/2 - scoreText_top.width/2 + 45))
+
 class gameSceneTransition():
     def __init__(self, gs):
         self.gs = gs
@@ -493,6 +527,40 @@ class gameSceneTransition():
         if self.a == self.ta:
             self.gs.restartScene()
 
+class SoundManager():
+    def __init__(self):
+        pygame.mixer.init()
+
+        pygame.mixer.music.load('./Sounds/backgroundTrack1.mp3')
+        pygame.mixer.music.set_volume(0.4)
+        pygame.mixer.music.play(-1)
+
+        self.knifeThrow1_sfx = pygame.mixer.Sound('./Sounds/throw1.mp3')
+        self.knifeThrow2_sfx = pygame.mixer.Sound('./Sounds/throw2.mp3')
+        self.knifeThrowSfx = [self.knifeThrow1_sfx, self.knifeThrow2_sfx]
+
+        self.knifeHit1_sfx = pygame.mixer.Sound('./Sounds/hit1.mp3')
+        self.knifeHit2_sfx = pygame.mixer.Sound('./Sounds/hit2.mp3')
+        self.knifeHit3_sfx = pygame.mixer.Sound('./Sounds/hit3.mp3')
+        self.knifeHit4_sfx = pygame.mixer.Sound('./Sounds/hit4.mp3')
+        self.knifeHitSfx = [self.knifeHit1_sfx, self.knifeHit2_sfx, self.knifeHit3_sfx, self.knifeHit4_sfx]
+
+        self.knifeBreak1_sfx = pygame.mixer.Sound('./Sounds/break1.mp3')
+        self.knifeBreakSfx = [self.knifeBreak1_sfx]
+
+        self.fruitSlice1_sfx = pygame.mixer.Sound('./Sounds/slice1.mp3')
+        self.fruitSlice2_sfx = pygame.mixer.Sound('./Sounds/slice2.mp3')
+        self.fruitSlice3_sfx = pygame.mixer.Sound('./Sounds/slice3.mp3')
+        self.fruitSliceSfx = [self.fruitSlice1_sfx, self.fruitSlice2_sfx, self.fruitSlice3_sfx]
+
+        self.lose_sfx = pygame.mixer.Sound('./Sounds/lose1.mp3')
+        self.loseSfx = [self.lose_sfx]
+
+    def playFromSounds(self, sounds):
+        sound = sounds[random.randint(0, len(sounds) - 1)]
+        sound.set_volume(0.4)
+        sound.play()
+
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 def checkForWin():
@@ -512,6 +580,7 @@ def checkForWin():
 
             if hitKnives == len(gs.knives):
                 #Lose
+                gs.score = 0
                 gs.transition.outTransition()
 
 #- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -542,6 +611,7 @@ while running:
             if event.button == 1:
                 for knife in gs.knives:
                     knife.throw(gs.knifeThrowForce)
+                    gs.soundMngr.playFromSounds(gs.soundMngr.knifeThrowSfx)
 
                 #spawn new knife 
                 gs.knifeBar.knivesLeft -= 1
@@ -577,6 +647,9 @@ while running:
 
     #draw ordered sprites
     blitOrderedSprites()
+
+    #update score
+    gs.updateScore()
 
     #blit particles
     for particle in gs.particles:
