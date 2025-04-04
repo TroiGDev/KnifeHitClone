@@ -1,0 +1,1 @@
+Most .py files do not have adjusted asset paths

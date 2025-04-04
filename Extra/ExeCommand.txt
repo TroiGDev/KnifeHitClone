@@ -1,0 +1,13 @@
+pyinstaller --onedir --add-data "Sprites/*.png:images" --add-data "Sounds/*.mp3:sounds" --add-data "Sprites/*.ttf:fonts"  main.py
+
+pyinstaller  --add-data "Sprites/*.png:images" --add-data "Sounds/*.mp3:sounds" --add-data "Sprites/*.ttf:fonts"  main.py
+
+next command was generated in atuo-py-to-exe from referenced video    https://www.youtube.com/watch?v=LLPubtQ3jpI
+pyinstaller --noconfirm --name KnifeHit --icon=C:\Users\Admin\Desktop\KnifeHit_prjct\Extra\KnifeHitIcon.ico --onedir --console --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sounds;Sounds/" --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sprites;Sprites/" --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\ExtraMath.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\GameObjects.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\OrderedSprites.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sound.py;."  "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\main.py"
+
+ --name KnifeHit
+--icon=C:\Users\Admin\Desktop\KnifeHit_prjct\Extra\KnifeHitIcon.ico
+
+pyinstaller --noconfirm --onedir --console --icon "C:\Users\Admin\Desktop\KnifeHit_prjct\Extra\KnifeHitIcon.ico" --name "Knife Hit" --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\ExtraMath.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\GameObjects.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\OrderedSprites.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sound.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sprites;Sprites/" --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sounds;Sounds/"  "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\main.py"
+
+pyinstaller --noconfirm --onefile --windowed --icon "C:\Users\Admin\Desktop\KnifeHit_prjct\Extra\KnifeHitIcon.ico" --name "Knife Hit" --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\ExtraMath.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\GameObjects.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\OrderedSprites.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sound.py;." --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sounds;Sounds/" --add-data "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\Sprites;Sprites/"  "C:\Users\Admin\Desktop\KnifeHit_prjct\KnifeHit\main.py"
