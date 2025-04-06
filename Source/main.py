@@ -21,7 +21,6 @@ import Sound
 
 #------------------------------------------------------------------------------------------------------
 
-#todo - in game settings for volume
 musicVolume = 0.4
 soundVolume = 0.4
 
@@ -240,16 +239,28 @@ while running:
 
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
+                
+                #get press position and determine if settings pressed or knife thrown
+                mPos = pygame.mouse.get_pos()
 
-                #throw all not yet thrown knives
-                for knife in gs.knives:
-                    knife.throw(gs.knifeThrowForce)
-                    gs.soundMngr.playFromSounds(gs.soundMngr.knifeThrowSfx)
+                if mPos[0] < 30 and mPos[1] < 30:
+                    #toggle music
+                    gs.soundMngr.toggleMusic()
 
-                #spawn new knife 
-                gs.knifeBar.knivesLeft -= 1
-                if gs.knifeBar.knivesLeft > 0:
-                    newKnife = GameObjects.Knife(gs, 200, 600)
+                elif mPos[0] < 75 and mPos[1] < 30:
+                    #toggle sound
+                    gs.soundMngr.toggleSound()
+
+                else:
+                    #throw all not yet thrown knives
+                    for knife in gs.knives:
+                        knife.throw(gs.knifeThrowForce)
+                        gs.soundMngr.playFromSounds(gs.soundMngr.knifeThrowSfx)
+
+                    #spawn new knife 
+                    gs.knifeBar.knivesLeft -= 1
+                    if gs.knifeBar.knivesLeft > 0:
+                        newKnife = GameObjects.Knife(gs, 200, 600)
 
     #update log
     gs.log.updateRotation(dTs)
@@ -288,6 +299,9 @@ while running:
     for particle in gs.particles:
         particle.update(screen)
     gs.particles = [particle for particle in gs.particles if particle.lifeTime > 0]
+
+    #display music/sound ui
+    gs.soundMngr.displayIcons(screen)
 
     #update transition animation
     gs.transition.updateOverlay()
