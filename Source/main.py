@@ -1,4 +1,5 @@
 import os
+import asyncio
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -30,15 +31,20 @@ soundVolume = 0.4
 screenWidth = 400
 screenHeight = 800
 
-pygame.init()
-screen = pygame.display.set_mode((screenWidth, screenHeight))
+screen = None
 
-#remove window icon and set caption
-pygame.display.set_caption('Knife Hit')
+async def main():
+    global screen
+    pygame.init()
+    await asyncio.sleep(0)  # <-- REQUIRED for web
+    screen = pygame.display.set_mode((screenWidth, screenHeight))
 
-transparent_surface = pygame.Surface((32, 32), pygame.SRCALPHA)
-transparent_surface = pygame.image.load('./Sprites/Apple.png').convert_alpha()
-pygame.display.set_icon(transparent_surface)
+    #remove window icon and set caption
+    pygame.display.set_caption('Knife Hit')
+
+    transparent_surface = pygame.Surface((32, 32), pygame.SRCALPHA)
+    transparent_surface = pygame.image.load('./Sprites/Apple.png').convert_alpha()
+    pygame.display.set_icon(transparent_surface)
 
 #------------------------------------------------------------------------------------------------------
 
